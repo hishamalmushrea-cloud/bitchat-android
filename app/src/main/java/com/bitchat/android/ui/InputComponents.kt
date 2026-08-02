@@ -1,6 +1,4 @@
 package com.bitchat.android.ui
-// [Goose] TODO: Replace inline file attachment stub with FilePickerButton abstraction that dispatches via FileShareDispatcher
-
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -238,7 +236,7 @@ fun MessageInput(
                     val secs = (elapsedMs / 1000).toInt()
                     val mm = secs / 60
                     val ss = secs % 60
-                    val maxSecs = 10 // 10 second max recording time
+                    val maxSecs = (com.bitchat.android.util.AppConstants.Media.MAX_VOICE_NOTE_DURATION_MS / 1000).toInt()
                     val maxMm = maxSecs / 60
                     val maxSs = maxSecs % 60
                     Text(
@@ -263,16 +261,16 @@ fun MessageInput(
             val latestChannel = rememberUpdatedState(currentChannel)
             val latestOnSendVoiceNote = rememberUpdatedState(onSendVoiceNote)
 
-            // Image button (image picker) - hide during recording
+            // Image and file buttons (pickers) - hide during recording
             if (!isRecording) {
-                // Revert to original separate buttons: round File button (left) and the old Image plus button (right)
+                // Round File button (left) and Image plus button (right)
+                val latestOnSendFileNote = rememberUpdatedState(onSendFileNote)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    // DISABLE FILE PICKER
-                    //FilePickerButton(
-                    //    onFileReady = { path ->
-                    //        onSendFileNote(latestSelectedPeer.value, latestChannel.value, path)
-                    //    }
-                    //)
+                    FilePickerButton(
+                        onFileReady = { path ->
+                            latestOnSendFileNote.value(latestSelectedPeer.value, latestChannel.value, path)
+                        }
+                    )
                     ImagePickerButton(
                         onImageReady = { outPath ->
                             onSendImageNote(latestSelectedPeer.value, latestChannel.value, outPath)

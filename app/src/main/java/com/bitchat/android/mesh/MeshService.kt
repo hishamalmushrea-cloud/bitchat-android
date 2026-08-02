@@ -23,6 +23,10 @@ interface MeshService {
     fun sendFilePrivate(recipientPeerID: String, file: BitchatFilePacket)
     fun cancelFileTransfer(transferId: String): Boolean
 
+    // WebRTC voice call signaling (offer/answer/ICE/end), sent as an encrypted Noise payload
+    // to a specific peer, same delivery path as private messages.
+    fun sendCallSignal(recipientPeerID: String, payload: ByteArray) {}
+
     fun sendBroadcastAnnounce()
     fun sendAnnouncementToPeer(peerID: String)
 

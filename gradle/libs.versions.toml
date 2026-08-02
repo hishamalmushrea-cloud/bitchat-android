@@ -52,6 +52,9 @@ zxing-core = "3.5.4"
 camerax = "1.5.2"
 mlkit-barcode = "17.3.0"
 
+# WebRTC (voice calls) - prebuilt library since Google stopped publishing org.webrtc artifacts
+stream-webrtc-android = "1.3.10"
+
 # Testing
 junit = "4.13.2"
 androidx-test-ext = "1.2.1"
@@ -122,6 +125,9 @@ androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.r
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax" }
 mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode" }
+
+# WebRTC (voice calls)
+stream-webrtc-android = { module = "io.getstream:stream-webrtc-android", version.ref = "stream-webrtc-android" }
 
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }

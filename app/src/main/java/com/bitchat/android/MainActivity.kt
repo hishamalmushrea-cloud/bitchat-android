@@ -826,6 +826,23 @@ class MainActivity : OrientationAwareActivity() {
      * Handle intents from notification clicks - open specific private chat or geohash chat
      */
     private fun handleNotificationIntent(intent: Intent) {
+        // Handle incoming call actions from notification
+        val callAction = intent.getStringExtra(com.bitchat.android.calls.CallNotificationHelper.EXTRA_CALL_ACTION)
+        if (callAction != null) {
+            Log.d("MainActivity", "Handling call action: $callAction")
+            when (callAction) {
+                com.bitchat.android.calls.CallNotificationHelper.ACTION_ACCEPT -> {
+                    chatViewModel.acceptVoiceCall()
+                }
+                com.bitchat.android.calls.CallNotificationHelper.ACTION_REJECT -> {
+                    chatViewModel.rejectVoiceCall()
+                }
+            }
+            // Clear the action so it's not re-processed
+            intent.removeExtra(com.bitchat.android.calls.CallNotificationHelper.EXTRA_CALL_ACTION)
+            return
+        }
+
         val shouldOpenPrivateChat = intent.getBooleanExtra(
             com.bitchat.android.ui.NotificationManager.EXTRA_OPEN_PRIVATE_CHAT, 
             false

@@ -58,6 +58,43 @@ object NostrEmbeddedBitChat {
     }
     
     /**
+     * Build a `bitchat1:` base64url-encoded BitChat packet carrying an arbitrary raw
+     * NoisePayloadType payload (e.g. CALL_SIGNAL) for Nostr DMs, with an embedded recipient.
+     * Unlike encodeAckForNostr, this does not assume the payload is a UTF-8 message ID.
+     */
+    fun encodeRawPayloadForNostr(
+        type: NoisePayloadType,
+        rawData: ByteArray,
+        recipientPeerID: String,
+        senderPeerID: String
+    ): String? {
+        try {
+            val payload = ByteArray(1 + rawData.size)
+            payload[0] = type.value.toByte()
+            System.arraycopy(rawData, 0, payload, 1, rawData.size)
+
+            val recipientIDHex = normalizeRecipientPeerID(recipientPeerID)
+
+            val packet = BitchatPacket(
+                version = 1u,
+                type = MessageType.NOISE_ENCRYPTED.value,
+                senderID = hexStringToByteArray(senderPeerID),
+                recipientID = hexStringToByteArray(recipientIDHex),
+                timestamp = System.currentTimeMillis().toULong(),
+                payload = payload,
+                signature = null,
+                ttl = com.bitchat.android.util.AppConstants.MESSAGE_TTL_HOPS
+            )
+
+            val data = packet.toBinaryData() ?: return null
+            return "bitchat1:" + base64URLEncode(data)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to encode raw payload for Nostr: ${e.message}")
+            return null
+        }
+    }
+
+    /**
      * Build a `bitchat1:` base64url-encoded BitChat packet carrying a delivery/read ack for Nostr DMs.
      */
     fun encodeAckForNostr(

@@ -192,6 +192,11 @@ class NostrDirectMessageHandler(
             }
             NoisePayloadType.VERIFY_CHALLENGE,
             NoisePayloadType.VERIFY_RESPONSE -> Unit // Ignore verification payloads in Nostr direct messages
+            NoisePayloadType.CALL_SIGNAL -> {
+                withContext(Dispatchers.Main) {
+                    meshDelegateHandler.didReceiveCallSignal(convKey, payload.data)
+                }
+            }
         }
     }
 

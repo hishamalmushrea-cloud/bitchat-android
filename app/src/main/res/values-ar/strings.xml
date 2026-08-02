@@ -68,6 +68,7 @@
     <!-- سهولة الوصول للمفضلة -->
     <string name="cd_add_favorite">إضافة إلى المفضلة</string>
     <string name="cd_remove_favorite">إزالة من المفضلة</string>
+    <string name="cd_start_voice_call">بدء مكالمة صوتية</string>
     <string name="cd_add_bookmark">إضافة إشارة مرجعية</string>
 
     <!-- ترويسة الدردشة وسهولة الوصول -->
@@ -400,4 +401,87 @@
   <string name="verify_success_title">Verified</string>
   <string name="verify_success_body">You verified %1$s</string>
   <string name="verify_success_system_message">verified %1$s</string>
+
+    <!-- Media send feedback -->
+    <string name="media_send_file_too_large">الملف كبير جدًا للإرسال (الحد الأقصى %1$s)</string>
+    <string name="media_send_file_missing">تعذر العثور على الملف المحدد</string>
+
+    <!-- Voice calls -->
+    <string name="call_status_calling">جارٍ الاتصال…</string>
+    <string name="call_status_incoming">مكالمة واردة</string>
+    <string name="call_status_connecting">جارٍ الاتصال…</string>
+    <string name="call_status_ended">انتهت المكالمة</string>
+    <string name="call_status_busy">مشغول</string>
+    <string name="call_status_no_answer">لا يوجد رد</string>
+    <string name="call_status_failed">فشلت المكالمة</string>
+    <string name="call_status_no_route">لا يمكن الوصول إلى الطرف الآخر</string>
+    <string name="call_status_active">مكالمة صوتية جارية</string>
+    <string name="call_status_muted">صامت</string>
+    <string name="call_action_mute">كتم</string>
+    <string name="call_action_unmute">إلغاء الكتم</string>
+    <string name="call_missed_title">مكالمة فائتة</string>
+    <string name="cd_start_voice_call">بدء مكالمة صوتية</string>
+    <string name="cd_accept_call">قبول المكالمة</string>
+    <string name="cd_reject_call">رفض المكالمة</string>
+    <string name="cd_end_call">إنهاء المكالمة</string>
+    <string name="cd_toggle_mute">كتم/إلغاء كتم الصوت</string>
+    <string name="cd_toggle_speaker">تبديل مكبر الصوت</string>
+
+    <!-- Call notification channels -->
+    <string name="call_channel_incoming">المكالمات الواردة</string>
+    <string name="call_channel_incoming_desc">إشعارات المكالمات الصوتية الواردة مع نغمة رنين</string>
+    <string name="call_channel_ongoing">المكالمات الجارية</string>
+    <string name="call_channel_ongoing_desc">إشعار مستمر أثناء المكالمات الصوتية النشطة</string>
+    <string name="call_channel_missed">المكالمات الفائتة</string>
+    <string name="call_channel_missed_desc">إشعارات المكالمات الصوتية الفائتة</string>
+
+    <!-- Connection quality labels -->
+    <string name="call_quality_unknown">جارٍ الاتصال…</string>
+    <string name="call_quality_excellent">ممتاز</string>
+    <string name="call_quality_good">جيد</string>
+    <string name="call_quality_poor">ضعيف</string>
+    <string name="call_quality_failing">جارٍ إعادة الاتصال…</string>
+
+    <!-- Image preview sheet -->
+    <string name="image_preview_title">إرسال الصور</string>
+    <string name="image_preview_count_suffix">محددة</string>
+    <string name="image_preview_empty">لم يتم تحديد صور</string>
+    <string name="image_preview_cancel">إلغاء</string>
+    <string name="image_preview_send">إرسال</string>
+    <string name="image_preview_remove">إزالة</string>
+
+    <!-- File transfer progress -->
+    <string name="transfer_complete">تم الإرسال</string>
+    <string name="transfer_cancelled">تم الإلغاء</string>
+    <string name="transfer_cancel">إلغاء النقل</string>
+    <string name="transfer_uploading">جارٍ الرفع…</string>
+
+    <!-- Call settings -->
+    <string name="call_settings_title">إعدادات المكالمة</string>
+    <string name="call_settings_turn_title">خادم TURN</string>
+    <string name="call_settings_turn_desc">تهيئة خادم وسيط TURN للمكالمات خلف NAT مقيد</string>
+    <string name="call_settings_turn_server">عنوان الخادم</string>
+    <string name="call_settings_turn_server_hint">turn:example.com:3478</string>
+    <string name="call_settings_turn_username">اسم المستخدم</string>
+    <string name="call_settings_turn_password">كلمة المرور</string>
+    <string name="call_settings_reconnect_title">إعادة الاتصال التلقائي</string>
+    <string name="call_settings_reconnect_desc">إعادة الاتصال تلقائيًا عند انقطاع المكالمة</string>
+    <string name="call_settings_save">حفظ</string>
+    <string name="call_settings_cancel">إلغاء</string>
+
+    <!-- Call log / history -->
+    <string name="call_log_title">سجل المكالمات</string>
+    <string name="call_log_empty">لا توجد مكالمات بعد</string>
+    <string name="call_log_incoming">واردة</string>
+    <string name="call_log_outgoing">صادرة</string>
+    <string name="call_log_completed">مكتملة</string>
+    <string name="call_log_missed">فائتة</string>
+    <string name="call_log_cancelled">ملغاة</string>
+    <string name="call_log_busy">مشغول</string>
+    <string name="call_log_no_answer">لا يوجد رد</string>
+    <string name="call_log_failed">فشلت</string>
+    <string name="call_log_clear">مسح السجل</string>
+
+    <!-- Voice recording waveform -->
+    <string name="voice_recording">جارٍ التسجيل…</string>
 </resources>

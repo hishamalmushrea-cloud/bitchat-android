@@ -2,7 +2,6 @@ package com.bitchat.android.ui.media
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -10,8 +9,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Camera
-import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
@@ -34,29 +31,64 @@ fun ImagePickerButton(
 ) {
     val context = LocalContext.current
     var capturedImagePath by remember { mutableStateOf<String?>(null) }
-    
-    val imagePicker = rememberLauncherForActivityResult(
+
+    // State for image preview sheet
+    var pendingImagePaths by remember { mutableStateOf<List<String>?>(null) }
+
+    // Allow selecting multiple images at once (up to 10) using the modern Photo Picker.
+    val multiImagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(10)
+    ) { uris: List<android.net.Uri> ->
+        if (uris.isNotEmpty()) {
+            val paths = uris.mapNotNull { uri ->
+                ImageUtils.downscaleAndSaveToAppFiles(context, uri)
+            }.filter { it.isNotBlank() }
+            if (paths.isNotEmpty()) {
+                pendingImagePaths = paths
+            }
+        }
+    }
+
+    // Fallback for devices/OS versions where the Photo Picker isn't available
+    val legacyImagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         if (uri != null) {
             val outPath = ImageUtils.downscaleAndSaveToAppFiles(context, uri)
-            if (!outPath.isNullOrBlank()) onImageReady(outPath)
+            if (!outPath.isNullOrBlank()) {
+                pendingImagePaths = listOf(outPath)
+            }
         }
     }
-    
+
+    fun launchImagePicker() {
+        try {
+            if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(context)) {
+                multiImagePicker.launch(
+                    androidx.activity.result.PickVisualMediaRequest(
+                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                    )
+                )
+            } else {
+                legacyImagePicker.launch("image/*")
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("ImagePickerButton", "Falling back to legacy image picker: ${e.message}")
+            legacyImagePicker.launch("image/*")
+        }
+    }
+
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         val path = capturedImagePath
         if (success && !path.isNullOrBlank()) {
-            // Downscale + correct orientation, then send; delete original
             val outPath = com.bitchat.android.features.media.ImageUtils.downscalePathAndSaveToAppFiles(context, path)
             if (!outPath.isNullOrBlank()) {
-                onImageReady(outPath)
+                pendingImagePaths = listOf(outPath)
             }
             runCatching { File(path).delete() }
         } else {
-            // Cleanup on cancel/failure
             path?.let { runCatching { File(it).delete() } }
         }
         capturedImagePath = null
@@ -86,11 +118,29 @@ fun ImagePickerButton(
         }
     }
 
+    // Show preview sheet when paths are pending
+    pendingImagePaths?.let { paths ->
+        ImagePreviewSheet(
+            imagePaths = paths,
+            onSend = { confirmedPaths ->
+                confirmedPaths.forEach { onImageReady(it) }
+                pendingImagePaths = null
+            },
+            onCancel = {
+                // Clean up pending images when user cancels
+                paths.forEach { path ->
+                    runCatching { File(path).delete() }
+                }
+                pendingImagePaths = null
+            }
+        )
+    }
+
     Box(
         modifier = modifier
             .size(32.dp)
             .combinedClickable(
-                onClick = { imagePicker.launch("image/*") },
+                onClick = { launchImagePicker() },
                 onLongClick = {
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                         startCameraCapture()
@@ -108,6 +158,4 @@ fun ImagePickerButton(
             modifier = Modifier.size(20.dp)
         )
     }
-
-    // No custom preview: native camera UI handles confirmation
 }

@@ -130,6 +130,9 @@ object AppConstants {
 
     object Media {
         const val MAX_FILE_SIZE_BYTES: Long = 50L * 1024 * 1024
+        // Max duration for a single recorded voice note, in milliseconds.
+        // Previously hardcoded to 10s; raised to 60s for more natural voice messages.
+        const val MAX_VOICE_NOTE_DURATION_MS: Long = 60_000L
     }
 
     object Services {

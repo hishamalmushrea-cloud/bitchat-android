@@ -190,6 +190,13 @@ fun ChatScreen(viewModel: ChatViewModel) {
         }
     }
 
+    // Active file transfer progress (shown above input area)
+    com.bitchat.android.ui.media.FileTransferProgressList(
+        onCancelTransfer = { transferId ->
+            com.bitchat.android.services.FileTransferTracker.cancelTransfer(transferId)
+        }
+    )
+
     ChatInputSection(
         messageText = messageText,
         onMessageTextChange = { newText: TextFieldValue ->
@@ -303,6 +310,17 @@ fun ChatScreen(viewModel: ChatViewModel) {
             onClose = { showFullScreenImageViewer = false }
         )
     }
+
+    // Voice call overlay - shown above everything else whenever a call is active
+    val callState by viewModel.callState.collectAsStateWithLifecycle()
+    com.bitchat.android.ui.calls.CallOverlay(
+        callState = callState,
+        onAccept = { viewModel.acceptVoiceCall() },
+        onReject = { viewModel.rejectVoiceCall() },
+        onHangUp = { viewModel.hangUpVoiceCall() },
+        onToggleMute = { viewModel.toggleVoiceCallMute() },
+        onToggleSpeaker = { viewModel.toggleVoiceCallSpeaker() }
+    )
 
     // Dialogs and Sheets
     ChatDialogs(

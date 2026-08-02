@@ -31,3 +31,8 @@
 -keepclassmembers class * implements android.location.LocationListener {
     public <methods>;
 }
+
+# WebRTC (voice calls) - keep native bridge classes
+-keep class org.webrtc.** { *; }
+-dontwarn org.webrtc.**
+

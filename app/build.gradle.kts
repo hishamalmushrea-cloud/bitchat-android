@@ -114,6 +114,9 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.compose)
+
+    // WebRTC (voice calls)
+    implementation(libs.stream.webrtc.android)
     
     // Cryptography
     implementation(libs.bundles.cryptography)

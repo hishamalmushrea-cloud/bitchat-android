@@ -38,14 +38,25 @@ class MediaSendingManager(
             val file = java.io.File(filePath)
             if (!file.exists()) {
                 Log.e(TAG, "❌ File does not exist: $filePath")
+                notifySendFailure(toPeerIDOrNull, channelOrNull, "voice note file could not be found")
                 return
             }
             Log.d(TAG, "📁 File exists: size=${file.length()} bytes, name=${file.name}")
             
             if (file.length() > MAX_FILE_SIZE) {
                 Log.e(TAG, "❌ File too large: ${file.length()} bytes (max: $MAX_FILE_SIZE)")
+                notifySendFailure(toPeerIDOrNull, channelOrNull, "voice note too large to send (max ${com.bitchat.android.features.file.FileUtils.formatFileSize(MAX_FILE_SIZE)})")
                 return
             }
+
+            // Track transfer progress
+            val transferId = "voice_${System.currentTimeMillis()}"
+            com.bitchat.android.services.FileTransferTracker.startTransfer(
+                id = transferId,
+                fileName = file.name,
+                filePath = filePath,
+                totalBytes = file.length()
+            )
 
             val filePacket = BitchatFilePacket(
                 fileName = file.name,
@@ -54,11 +65,16 @@ class MediaSendingManager(
                 content = file.readBytes()
             )
 
+            // Update progress to complete (for local sends, content is already loaded)
+            com.bitchat.android.services.FileTransferTracker.updateProgress(transferId, file.length())
+
             if (toPeerIDOrNull != null) {
                 sendPrivateFile(toPeerIDOrNull, filePacket, filePath, BitchatMessageType.Audio)
             } else {
                 sendPublicFile(channelOrNull, filePacket, filePath, BitchatMessageType.Audio)
             }
+
+            com.bitchat.android.services.FileTransferTracker.completeTransfer(transferId)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send voice note: ${e.message}")
         }
@@ -73,14 +89,25 @@ class MediaSendingManager(
             val file = java.io.File(filePath)
             if (!file.exists()) {
                 Log.e(TAG, "❌ File does not exist: $filePath")
+                notifySendFailure(toPeerIDOrNull, channelOrNull, "image file could not be found")
                 return
             }
             Log.d(TAG, "📁 File exists: size=${file.length()} bytes, name=${file.name}")
             
             if (file.length() > MAX_FILE_SIZE) {
                 Log.e(TAG, "❌ File too large: ${file.length()} bytes (max: $MAX_FILE_SIZE)")
+                notifySendFailure(toPeerIDOrNull, channelOrNull, "image too large to send (max ${com.bitchat.android.features.file.FileUtils.formatFileSize(MAX_FILE_SIZE)})")
                 return
             }
+
+            // Track transfer progress
+            val transferId = "image_${System.currentTimeMillis()}"
+            com.bitchat.android.services.FileTransferTracker.startTransfer(
+                id = transferId,
+                fileName = file.name,
+                filePath = filePath,
+                totalBytes = file.length()
+            )
 
             val filePacket = BitchatFilePacket(
                 fileName = file.name,
@@ -89,11 +116,15 @@ class MediaSendingManager(
                 content = file.readBytes()
             )
 
+            com.bitchat.android.services.FileTransferTracker.updateProgress(transferId, file.length())
+
             if (toPeerIDOrNull != null) {
                 sendPrivateFile(toPeerIDOrNull, filePacket, filePath, BitchatMessageType.Image)
             } else {
                 sendPublicFile(channelOrNull, filePacket, filePath, BitchatMessageType.Image)
             }
+
+            com.bitchat.android.services.FileTransferTracker.completeTransfer(transferId)
         } catch (e: Exception) {
             Log.e(TAG, "❌ CRITICAL: Image send failed completely", e)
             Log.e(TAG, "❌ Image path: $filePath")
@@ -111,12 +142,14 @@ class MediaSendingManager(
             val file = java.io.File(filePath)
             if (!file.exists()) {
                 Log.e(TAG, "❌ File does not exist: $filePath")
+                notifySendFailure(toPeerIDOrNull, channelOrNull, "file could not be found")
                 return
             }
             Log.d(TAG, "📁 File exists: size=${file.length()} bytes, name=${file.name}")
             
             if (file.length() > MAX_FILE_SIZE) {
                 Log.e(TAG, "❌ File too large: ${file.length()} bytes (max: $MAX_FILE_SIZE)")
+                notifySendFailure(toPeerIDOrNull, channelOrNull, "file too large to send (max ${com.bitchat.android.features.file.FileUtils.formatFileSize(MAX_FILE_SIZE)})")
                 return
             }
 
@@ -146,6 +179,15 @@ class MediaSendingManager(
             )
             Log.d(TAG, "📦 Created file packet successfully")
 
+            // Track transfer progress
+            val transferId = "file_${System.currentTimeMillis()}"
+            com.bitchat.android.services.FileTransferTracker.startTransfer(
+                id = transferId,
+                fileName = originalName,
+                filePath = filePath,
+                totalBytes = file.length()
+            )
+
             val messageType = when {
                 mimeType.lowercase().startsWith("image/") -> BitchatMessageType.Image
                 mimeType.lowercase().startsWith("audio/") -> BitchatMessageType.Audio
@@ -157,6 +199,9 @@ class MediaSendingManager(
             } else {
                 sendPublicFile(channelOrNull, filePacket, filePath, messageType)
             }
+
+            com.bitchat.android.services.FileTransferTracker.updateProgress(transferId, file.length())
+            com.bitchat.android.services.FileTransferTracker.completeTransfer(transferId)
         } catch (e: Exception) {
             Log.e(TAG, "❌ CRITICAL: File send failed completely", e)
             Log.e(TAG, "❌ File path: $filePath")
@@ -336,6 +381,32 @@ class MediaSendingManager(
                     com.bitchat.android.model.DeliveryStatus.PartiallyDelivered(evt.sent, evt.total)
                 )
             }
+        }
+    }
+
+    /**
+     * Post a local "system" style message so the user gets feedback when a media
+     * send is rejected before it ever reaches the mesh/transport layer.
+     */
+    private fun notifySendFailure(toPeerIDOrNull: String?, channelOrNull: String?, reason: String) {
+        try {
+            val systemMessage = BitchatMessage(
+                sender = "system",
+                content = "couldn't send $reason.",
+                timestamp = Date(),
+                isRelay = false,
+                isPrivate = toPeerIDOrNull != null,
+                channel = channelOrNull
+            )
+            if (toPeerIDOrNull != null) {
+                messageManager.addPrivateMessage(toPeerIDOrNull, systemMessage)
+            } else if (!channelOrNull.isNullOrBlank()) {
+                channelManager.addChannelMessage(channelOrNull, systemMessage, meshService.myPeerID)
+            } else {
+                messageManager.addMessage(systemMessage)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to post media send failure notice: ${e.message}")
         }
     }
 

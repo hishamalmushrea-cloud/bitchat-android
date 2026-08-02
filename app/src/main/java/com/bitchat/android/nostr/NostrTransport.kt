@@ -282,6 +282,62 @@ class NostrTransport(
         }
     }
     
+    /**
+     * Send a WebRTC call signaling payload to a peer via Nostr gift-wrapped DM.
+     * Used as a fallback path when no direct mesh session is available (e.g. peer
+     * only reachable over the internet via a mutual favorite relationship).
+     */
+    fun sendCallSignal(recipientPeerID: String, payload: ByteArray) {
+        transportScope.launch {
+            try {
+                val recipientNostrPubkey = resolveNostrPublicKey(recipientPeerID)
+                if (recipientNostrPubkey == null) {
+                    Log.w(TAG, "No Nostr public key found for call signal to: $recipientPeerID")
+                    return@launch
+                }
+
+                val senderIdentity = NostrIdentityBridge.getCurrentNostrIdentity(context)
+                if (senderIdentity == null) {
+                    Log.e(TAG, "No Nostr identity available for call signal")
+                    return@launch
+                }
+
+                val recipientHex = try {
+                    val (hrp, data) = Bech32.decode(recipientNostrPubkey)
+                    if (hrp != "npub") return@launch
+                    data.joinToString("") { "%02x".format(it) }
+                } catch (e: Exception) {
+                    return@launch
+                }
+
+                val embedded = NostrEmbeddedBitChat.encodeRawPayloadForNostr(
+                    type = NoisePayloadType.CALL_SIGNAL,
+                    rawData = payload,
+                    recipientPeerID = recipientPeerID,
+                    senderPeerID = senderPeerID
+                )
+
+                if (embedded == null) {
+                    Log.e(TAG, "NostrTransport: failed to embed call signal")
+                    return@launch
+                }
+
+                val giftWraps = NostrProtocol.createPrivateMessage(
+                    content = embedded,
+                    recipientPubkey = recipientHex,
+                    senderIdentity = senderIdentity
+                )
+
+                giftWraps.forEach { event ->
+                    Log.d(TAG, "NostrTransport: sending call signal giftWrap id=${event.id.take(16)}...")
+                    NostrRelayManager.getInstance(context).sendEvent(event)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to send call signal via Nostr: ${e.message}")
+            }
+        }
+    }
+
     fun sendDeliveryAck(messageID: String, to: String) {
         transportScope.launch {
             try {

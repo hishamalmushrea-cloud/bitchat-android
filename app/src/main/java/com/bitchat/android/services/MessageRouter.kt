@@ -122,6 +122,33 @@ class MessageRouter private constructor(
         }
     }
 
+    /**
+     * Route a WebRTC call signaling payload (offer/answer/ICE/end) to a peer.
+     * Prefers the mesh (BLE/Wi-Fi Aware) when an established encrypted session exists,
+     * since it has the lowest latency and works fully offline; falls back to Nostr
+     * for peers only reachable over the internet (mutual favorites).
+     *
+     * @return true if the signal was dispatched via some transport, false if no route exists.
+     */
+    fun sendCallSignal(toPeerID: String, payload: ByteArray): Boolean {
+        return when {
+            isReady(mesh, toPeerID) -> {
+                Log.d(TAG, "Routing call signal via mesh to ${toPeerID.take(8)}…")
+                mesh.sendCallSignal(toPeerID, payload)
+                true
+            }
+            canSendViaNostr(toPeerID) -> {
+                Log.d(TAG, "Routing call signal via Nostr to ${toPeerID.take(32)}…")
+                nostr.sendCallSignal(toPeerID, payload)
+                true
+            }
+            else -> {
+                Log.w(TAG, "No route available for call signal to ${toPeerID.take(8)}…")
+                false
+            }
+        }
+    }
+
     // Flush any queued messages for a specific peerID
     fun flushOutboxFor(peerID: String) {
         val queued = outbox[peerID] ?: return

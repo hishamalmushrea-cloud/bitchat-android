@@ -459,6 +459,10 @@ class BluetoothMeshService(private val context: Context) : TransportBridgeServic
             override fun onVerifyResponseReceived(peerID: String, payload: ByteArray, timestampMs: Long) {
                 delegate?.didReceiveVerifyResponse(peerID, payload, timestampMs)
             }
+
+            override fun onCallSignalReceived(peerID: String, payload: ByteArray) {
+                delegate?.didReceiveCallSignal(peerID, payload)
+            }
         }
         
         // PacketProcessor delegates
@@ -1052,6 +1056,18 @@ class BluetoothMeshService(private val context: Context) : TransportBridgeServic
         sendNoisePayloadToPeer(payload, peerID, "verify response")
     }
 
+    /**
+     * Send a WebRTC call signaling payload (offer/answer/ICE/end) to a peer over the
+     * existing encrypted Noise transport channel.
+     */
+    fun sendCallSignal(recipientPeerID: String, callPayload: ByteArray) {
+        val payload = NoisePayload(
+            type = NoisePayloadType.CALL_SIGNAL,
+            data = callPayload
+        )
+        sendNoisePayloadToPeer(payload, recipientPeerID, "call signal")
+    }
+
     private fun sendNoisePayloadToPeer(payload: NoisePayload, recipientPeerID: String, label: String) {
         serviceScope.launch {
             try {
@@ -1489,4 +1505,5 @@ class BluetoothMeshService(private val context: Context) : TransportBridgeServic
 interface BluetoothMeshDelegate : MeshDelegate {
     override fun didReceiveVerifyChallenge(peerID: String, payload: ByteArray, timestampMs: Long)
     override fun didReceiveVerifyResponse(peerID: String, payload: ByteArray, timestampMs: Long)
+    override fun didReceiveCallSignal(peerID: String, payload: ByteArray)
 }

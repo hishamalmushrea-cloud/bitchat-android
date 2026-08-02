@@ -137,6 +137,61 @@ class ChatViewModel(
         getMyPeerID = { mesh.myPeerID },
         getMeshService = { mesh }
     )
+
+    // Voice call manager (WebRTC). Signaling is routed through MessageRouter so it
+    // transparently uses mesh (BLE/Wi-Fi Aware) when available, falling back to Nostr.
+    val callManager = com.bitchat.android.calls.CallManager.getInstance(application.applicationContext).also { cm ->
+        cm.configure(
+            getMyPeerID = { mesh.myPeerID },
+            sendSignal = { peerID, payload ->
+                com.bitchat.android.services.MessageRouter.getInstance(getApplication(), mesh)
+                    .sendCallSignal(peerID, payload)
+            },
+            resolveDisplayName = { peerID -> nicknameForPeer(peerID) ?: peerID.take(8) }
+        )
+        meshDelegateHandler.onCallSignalReceived = { peerID, payload -> cm.onSignalReceived(peerID, payload) }
+    }
+    val callState: StateFlow<com.bitchat.android.calls.CallState> = callManager.callState
+
+    // Geohash voice channel manager
+    val geohashVoiceManager = com.bitchat.android.calls.GeohashVoiceChannelManager.getInstance(application.applicationContext).also { gvm ->
+        gvm.configure(
+            getMyPeerID = { mesh.myPeerID },
+            resolveDisplayName = { peerID -> nicknameForPeer(peerID) ?: peerID.take(8) },
+            sendMessage = { geohash, payload ->
+                try {
+                    // Send as a regular message in the geohash channel
+                    val content = payload
+                    val channel = com.bitchat.android.geohash.GeohashChannel(
+                        com.bitchat.android.geohash.GeohashChannelLevel.BLOCK,
+                        geohash
+                    )
+                    val channelId = com.bitchat.android.geohash.ChannelID.Location(channel)
+                    sendChannelMessage(content, channelId, null)
+                    true
+                } catch (e: Exception) {
+                    android.util.Log.e("ChatViewModel", "Failed to send voice presence: ${e.message}")
+                    false
+                }
+            }
+        )
+    }
+    val geohashVoiceState: StateFlow<com.bitchat.android.calls.GeohashVoiceChannelManager.VoiceChannelState?> = geohashVoiceManager.channelState
+
+    fun joinGeohashVoiceChannel(geohash: String): Boolean = geohashVoiceManager.joinVoiceChannel(geohash)
+    fun leaveGeohashVoiceChannel() = geohashVoiceManager.leaveVoiceChannel()
+    fun toggleGeohashVoiceMute(): Boolean = geohashVoiceManager.toggleMute()
+    fun toggleGeohashVoiceDeafen(): Boolean = geohashVoiceManager.toggleDeafen()
+
+    fun startVoiceCall(peerID: String) {
+        callManager.startCall(peerID)
+    }
+
+    fun acceptVoiceCall() = callManager.acceptCall()
+    fun rejectVoiceCall() = callManager.rejectCall()
+    fun hangUpVoiceCall() = callManager.hangUp()
+    fun toggleVoiceCallMute(): Boolean = callManager.toggleMute()
+    fun toggleVoiceCallSpeaker(): Boolean = callManager.toggleSpeaker()
     
     // New Geohash architecture ViewModel (replaces God object service usage in UI path)
     val geohashViewModel = GeohashViewModel(
@@ -921,6 +976,10 @@ class ChatViewModel(
     override fun didReceiveVerifyResponse(peerID: String, payload: ByteArray, timestampMs: Long) {
         verificationHandler.didReceiveVerifyResponse(peerID, payload)
     }
+
+    override fun didReceiveCallSignal(peerID: String, payload: ByteArray) {
+        meshDelegateHandler.didReceiveCallSignal(peerID, payload)
+    }
     
     override fun decryptChannelMessage(encryptedContent: ByteArray, channel: String): String? {
         return meshDelegateHandler.decryptChannelMessage(encryptedContent, channel)
@@ -940,6 +999,9 @@ class ChatViewModel(
     
     fun panicClearAllData() {
         Log.w(TAG, "🚨 PANIC MODE ACTIVATED - Clearing all sensitive data")
+
+        // End any active voice call immediately
+        try { callManager.hangUp() } catch (_: Exception) { }
         
         // Clear all UI managers
         messageManager.clearAllMessages()

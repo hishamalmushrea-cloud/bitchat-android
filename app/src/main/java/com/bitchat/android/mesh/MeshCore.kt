@@ -321,6 +321,10 @@ class MeshCore(
             override fun onVerifyResponseReceived(peerID: String, payload: ByteArray, timestampMs: Long) {
                 delegate?.didReceiveVerifyResponse(peerID, payload, timestampMs)
             }
+
+            override fun onCallSignalReceived(peerID: String, payload: ByteArray) {
+                delegate?.didReceiveCallSignal(peerID, payload)
+            }
         }
 
         packetProcessor.delegate = object : PacketProcessorDelegate {
@@ -564,6 +568,14 @@ class MeshCore(
             data = tlv
         )
         sendNoisePayloadToPeer(payload, peerID)
+    }
+
+    fun sendCallSignal(recipientPeerID: String, callPayload: ByteArray) {
+        val payload = NoisePayload(
+            type = NoisePayloadType.CALL_SIGNAL,
+            data = callPayload
+        )
+        sendNoisePayloadToPeer(payload, recipientPeerID)
     }
 
     private fun sendNoisePayloadToPeer(payload: NoisePayload, recipientPeerID: String) {

@@ -1006,6 +1006,21 @@ fun PrivateChatSheet(
                                 }
                             }
 
+                            val currentCallState by viewModel.callState.collectAsStateWithLifecycle()
+                            val canStartCall = currentCallState is com.bitchat.android.calls.CallState.Idle
+                            IconButton(
+                                onClick = { if (canStartCall) viewModel.startVoiceCall(peerID) },
+                                enabled = canStartCall,
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Call,
+                                    contentDescription = stringResource(R.string.cd_start_voice_call),
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (canStartCall) Color(0xFF32D74B) else colorScheme.onSurface.copy(alpha = 0.3f)
+                                )
+                            }
+
                             IconButton(
                                 onClick = { viewModel.toggleFavorite(peerID) },
                                 modifier = Modifier.size(28.dp)

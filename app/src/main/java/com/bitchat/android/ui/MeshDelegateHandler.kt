@@ -24,6 +24,10 @@ class MeshDelegateHandler(
     private val getMeshService: () -> MeshService
 ) : BluetoothMeshDelegate {
 
+    // Optional external hook (wired by ChatViewModel/CallManager) to receive raw
+    // WebRTC signaling payloads without coupling MeshDelegateHandler to the call stack.
+    var onCallSignalReceived: ((peerID: String, payload: ByteArray) -> Unit)? = null
+
     override fun didReceiveMessage(message: BitchatMessage) {
         coroutineScope.launch {
             // FIXED: Deduplicate messages from dual connection paths
@@ -228,6 +232,10 @@ class MeshDelegateHandler(
 
     override fun didReceiveVerifyResponse(peerID: String, payload: ByteArray, timestampMs: Long) {
         // Handled by ChatViewModel for verification flow
+    }
+
+    override fun didReceiveCallSignal(peerID: String, payload: ByteArray) {
+        onCallSignalReceived?.invoke(peerID, payload)
     }
     
     override fun decryptChannelMessage(encryptedContent: ByteArray, channel: String): String? {

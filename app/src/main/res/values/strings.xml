@@ -69,6 +69,7 @@
   <!-- Favorites accessibility -->
   <string name="cd_add_favorite">Add to favorites</string>
   <string name="cd_remove_favorite">Remove from favorites</string>
+  <string name="cd_start_voice_call">Start voice call</string>
   <string name="cd_add_bookmark">Add bookmark</string>
 
   <!-- Chat header &amp; accessibility -->
@@ -452,5 +453,88 @@
     <item quantity="other">%d people</item>
   </plurals>
 
-    <string name="bluetooth_recommended">Bluetooth Recommended</string>
+  <string name="bluetooth_recommended">Bluetooth Recommended</string>
+
+    <!-- Media send feedback -->
+    <string name="media_send_file_too_large">File too large to send (max %1$s)</string>
+    <string name="media_send_file_missing">Selected file could not be found</string>
+
+    <!-- Voice calls -->
+    <string name="call_status_calling">Calling…</string>
+    <string name="call_status_incoming">Incoming call</string>
+    <string name="call_status_connecting">Connecting…</string>
+    <string name="call_status_ended">Call ended</string>
+    <string name="call_status_busy">Busy</string>
+    <string name="call_status_no_answer">No answer</string>
+    <string name="call_status_failed">Call failed</string>
+    <string name="call_status_no_route">Peer unreachable</string>
+    <string name="call_status_active">Voice call in progress</string>
+    <string name="call_status_muted">Muted</string>
+    <string name="call_action_mute">Mute</string>
+    <string name="call_action_unmute">Unmute</string>
+    <string name="call_missed_title">Missed call</string>
+    <string name="cd_start_voice_call">Start voice call</string>
+    <string name="cd_accept_call">Accept call</string>
+    <string name="cd_reject_call">Reject call</string>
+    <string name="cd_end_call">End call</string>
+    <string name="cd_toggle_mute">Toggle mute</string>
+    <string name="cd_toggle_speaker">Toggle speaker</string>
+
+    <!-- Call notification channels -->
+    <string name="call_channel_incoming">Incoming calls</string>
+    <string name="call_channel_incoming_desc">Notifications for incoming voice calls with ringtone</string>
+    <string name="call_channel_ongoing">Ongoing calls</string>
+    <string name="call_channel_ongoing_desc">Persistent notification during active voice calls</string>
+    <string name="call_channel_missed">Missed calls</string>
+    <string name="call_channel_missed_desc">Notifications for missed voice calls</string>
+
+    <!-- Connection quality labels -->
+    <string name="call_quality_unknown">Connecting…</string>
+    <string name="call_quality_excellent">Excellent</string>
+    <string name="call_quality_good">Good</string>
+    <string name="call_quality_poor">Poor</string>
+    <string name="call_quality_failing">Reconnecting…</string>
+
+    <!-- Image preview sheet -->
+    <string name="image_preview_title">Send images</string>
+    <string name="image_preview_count_suffix">selected</string>
+    <string name="image_preview_empty">No images selected</string>
+    <string name="image_preview_cancel">Cancel</string>
+    <string name="image_preview_send">Send</string>
+    <string name="image_preview_remove">Remove</string>
+
+    <!-- File transfer progress -->
+    <string name="transfer_complete">Sent</string>
+    <string name="transfer_cancelled">Cancelled</string>
+    <string name="transfer_cancel">Cancel transfer</string>
+    <string name="transfer_uploading">Uploading…</string>
+
+    <!-- Call settings -->
+    <string name="call_settings_title">Call settings</string>
+    <string name="call_settings_turn_title">TURN server</string>
+    <string name="call_settings_turn_desc">Configure a TURN relay server for calls behind restrictive NAT</string>
+    <string name="call_settings_turn_server">Server URI</string>
+    <string name="call_settings_turn_server_hint">turn:example.com:3478</string>
+    <string name="call_settings_turn_username">Username</string>
+    <string name="call_settings_turn_password">Password</string>
+    <string name="call_settings_reconnect_title">Auto-reconnect</string>
+    <string name="call_settings_reconnect_desc">Automatically reconnect when the call drops</string>
+    <string name="call_settings_save">Save</string>
+    <string name="call_settings_cancel">Cancel</string>
+
+    <!-- Call log / history -->
+    <string name="call_log_title">Call history</string>
+    <string name="call_log_empty">No calls yet</string>
+    <string name="call_log_incoming">Incoming</string>
+    <string name="call_log_outgoing">Outgoing</string>
+    <string name="call_log_completed">Completed</string>
+    <string name="call_log_missed">Missed</string>
+    <string name="call_log_cancelled">Cancelled</string>
+    <string name="call_log_busy">Busy</string>
+    <string name="call_log_no_answer">No answer</string>
+    <string name="call_log_failed">Failed</string>
+    <string name="call_log_clear">Clear history</string>
+
+    <!-- Voice recording waveform -->
+    <string name="voice_recording">Recording…</string>
 </resources>
