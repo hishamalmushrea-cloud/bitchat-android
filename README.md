@@ -1,3 +1,14 @@
+# bitchat-android
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/hishamalmushrea-cloud/bitchat-android?style=social)](https://github.com/hishamalmushrea-cloud/bitchat-android)
+[![GitHub](https://img.shields.io/github/license/hishamalmushrea-cloud/bitchat-android)](https://github.com/hishamalmushrea-cloud/bitchat-android/blob/main/LICENSE)
+[![Trendshift](https://trendshift.io/api/badge/repositories/4119)](https://trendshift.io/)
+[![Docs Website](https://img.shields.io/badge/Docs-Website-blue?style=for-the-badge&logo=readthedocs)](https://github.com/hishamalmushrea-cloud/bitchat-android)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/)
+[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/hishamalmushrea-cloud?style=social)](https://x.com/hishamalmushrea-cloud)
+
+---
+
 <p align="center">
     <img src="https://github.com/user-attachments/assets/188c42f8-d249-4a72-b27a-e2b4f10a00a8" alt="Bitchat Android Logo" width="480">
 </p>
